@@ -1,4 +1,6 @@
-# service-builder
+# service-builder (WIP)
+
+> Not building yet
 
 [![Crates.io](https://img.shields.io/crates/v/service-builder.svg)](https://crates.io/crates/service-builder)
 [![Documentation](https://docs.rs/service-builder/badge.svg)](https://docs.rs/service-builder)
