@@ -44,7 +44,7 @@ pub fn builder(_attr: TokenStream, item: TokenStream) -> TokenStream {
         let name_str = name.to_string();
         quote! {
             let #name = self.#name.ok_or_else(||
-                BuildError::MissingDependency(#name_str.to_string())
+                service_builder::error::BuildError::MissingDependency(#name_str.to_string())
             )?;
         }
     });
@@ -69,7 +69,7 @@ pub fn builder(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
             #(#with_methods)*
 
-            pub fn build(self) -> Result<#name, BuildError> {
+            pub fn build(self) -> Result<#name, service_builder::error::BuildError> {
                 #(#build_checks)*
 
                 Ok(#name {
@@ -82,11 +82,6 @@ pub fn builder(_attr: TokenStream, item: TokenStream) -> TokenStream {
             pub fn builder() -> #builder_name {
                 #builder_name::new()
             }
-        }
-
-        #[derive(Debug)]
-        pub enum BuildError {
-            MissingDependency(String),
         }
     };
 
