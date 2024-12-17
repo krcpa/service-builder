@@ -73,7 +73,7 @@ version = "0.1.0"
 dependencies = [
  "proc-macro2",
  "quote",
- "service-builder-macro",
+ "service-builder-macro 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn",
  "thiserror",
 ]
@@ -81,6 +81,19 @@ dependencies = [
 [[package]]
 name = "service-builder-macro"
 version = "0.1.0"
+dependencies = [
+ "darling",
+ "proc-macro2",
+ "quote",
+ "syn",
+ "thiserror",
+]
+
+[[package]]
+name = "service-builder-macro"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "777a592c080d6f80c600d72421a8505b459aebb64bf4bbec47a49db32845dd69"
 dependencies = [
  "darling",
  "proc-macro2",
