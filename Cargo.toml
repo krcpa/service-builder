@@ -1,6 +1,6 @@
 [package]
 name = "service-builder"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["anil <anil.krcp@gmail.com>"]
 description = "A lightweight, type-safe service construction library for Rust that provides compile-time dependency injection through builder pattern"
