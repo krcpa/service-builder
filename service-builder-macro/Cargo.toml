@@ -1,6 +1,6 @@
 [package]
 name = "service-builder-macro"
-version = "0.1.0"
+version = "0.1.2"
 edition = "2021"
 authors = ["anil <anil.krcp@gmail.com>"]
 description = "A lightweight, type-safe service construction library for Rust that provides compile-time dependency injection through builder pattern"
@@ -18,4 +18,3 @@ quote = "1.0"
 proc-macro2 = "1.0"
 darling = "0.20"
 thiserror = "2.0.7"
-
