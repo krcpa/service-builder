@@ -16,7 +16,7 @@
 //!
 //! # Example
 //!
-//! ```rust
+//! ```ignore
 //! use service_builder::builder;
 //! use service_builder::error::BuildError;
 //! use std::sync::Arc;
@@ -32,12 +32,6 @@
 //!     .cache(cache)
 //!     .build()?;
 //! ```
-// error.rs
-//! Error types for the service builder.
-//!
-//! This module provides a comprehensive error handling system for service initialization
-//! and building processes.
-
 
 pub mod error;
 

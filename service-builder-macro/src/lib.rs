@@ -13,7 +13,28 @@ pub fn builder(_attr: TokenStream, item: TokenStream) -> TokenStream {
         Data::Struct(data) => {
             match &data.fields {
                 Fields::Named(fields) => &fields.named,
-                _ => panic!("Only named fields are supported")
+                Fields::Unit => return quote! {
+                    #input
+
+                    pub struct #builder_name {}
+
+                    impl #builder_name {
+                        pub fn new() -> Self {
+                            Self {}
+                        }
+
+                        pub fn build(self) -> Result<#name, service_builder::error::BuildError> {
+                            Ok(#name {})
+                        }
+                    }
+
+                    impl #name {
+                        pub fn builder() -> #builder_name {
+                            #builder_name::new()
+                        }
+                    }
+                }.into(),
+                _ => panic!("Only named fields or unit structs are supported")
             }
         },
         _ => panic!("Only structs are supported")
@@ -40,19 +61,6 @@ pub fn builder(_attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     });
 
-    let build_checks = field_names.iter().map(|name| {
-        let name_str = name.to_string();
-        quote! {
-            let #name = self.#name.ok_or_else(||
-                service_builder::error::BuildError::MissingDependency(#name_str.to_string())
-            )?;
-        }
-    });
-
-    let build_fields = field_names.iter().map(|name| {
-        quote! { #name: #name }
-    });
-
     let expanded = quote! {
         #input
 
@@ -70,10 +78,15 @@ pub fn builder(_attr: TokenStream, item: TokenStream) -> TokenStream {
             #(#with_methods)*
 
             pub fn build(self) -> Result<#name, service_builder::error::BuildError> {
-                #(#build_checks)*
+                // Get all fields 
+                #(
+                    let #field_names = self.#field_names.ok_or_else(||
+                        service_builder::error::BuildError::MissingDependency(stringify!(#field_names).to_string())
+                    )?;
+                )*
 
                 Ok(#name {
-                    #(#build_fields,)*
+                    #(#field_names: #field_names,)*
                 })
             }
         }
@@ -84,6 +97,8 @@ pub fn builder(_attr: TokenStream, item: TokenStream) -> TokenStream {
             }
         }
     };
+
+    eprintln!("Generated code:\n{}", expanded);
 
     TokenStream::from(expanded)
 }
