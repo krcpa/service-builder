@@ -71,6 +71,7 @@ dependencies = [
 name = "service-builder"
 version = "0.1.2"
 dependencies = [
+ "darling",
  "proc-macro2",
  "quote",
  "service-builder-macro",

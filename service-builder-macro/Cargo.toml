@@ -3,11 +3,9 @@ name = "service-builder-macro"
 version = "0.1.2"
 edition = "2021"
 authors = ["anil <anil.krcp@gmail.com>"]
-description = "A lightweight, type-safe service construction library for Rust that provides compile-time dependency injection through builder pattern"
+description = "Procedural macros for service-builder"
 license = "MIT"
 repository = "https://github.com/krcpa/service-builder"
-keywords = ["dependency-injection", "builder-pattern", "ioc", "di", "type-safe"]
-categories = ["development-tools::build-utils", "rust-patterns", "development-tools"]
 
 [lib]
 proc-macro = true
