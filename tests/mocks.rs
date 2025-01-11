@@ -15,7 +15,9 @@ impl UserRepository for MockRepository {}
 
 #[derive(Debug)]
 #[builder]
-pub struct MockCache;
+pub struct MockCache {
+    pub value: String,
+}
 impl Cache for MockCache {}
 
 // Helper trait for checking if a type implements UserRepository

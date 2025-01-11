@@ -34,5 +34,6 @@
 //! ```
 
 pub mod error;
+pub mod prelude;
 
 pub use service_builder_macro::builder;
