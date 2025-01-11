@@ -6,6 +6,15 @@
 
 A lightweight, type-safe service construction library for Rust that leverages the builder pattern to provide a more idiomatic alternative to traditional dependency injection.
 
+## Features
+
+- 🔒 **Type-safe dependency injection** at compile time
+- 🚀 **Zero runtime overhead** - everything is checked at compile time
+- 🛠️ **Automatic builder implementation** via proc-macros
+- 📦 **Field-level getters and setters** with attribute control
+- ⚡ **Zero-cost abstractions** - no runtime reflection or dynamic dispatch
+- 🔍 **Comprehensive error handling** with descriptive messages
+
 ## Why Builder Pattern in Rust?
 
 ### 1. Ownership and Borrowing
@@ -60,10 +69,11 @@ let post_service = PostService::builder()
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-service-builder = "0.1.0"
+service-builder = "0.2.0"
 ```
 
-Basic usage:
+### Basic Usage with Builder Pattern
+
 ```rust
 use service_builder::prelude::*;
 use std::sync::Arc;
@@ -74,148 +84,83 @@ struct UserService {
     cache: Arc<dyn Cache>,
 }
 
-#[builder]
-struct AppServices {
-    user_service: Arc<UserService>,
-    post_service: Arc<PostService>,
-}
-
-// In your main.rs or setup code
 let user_service = UserService::builder()
     .repository(user_repo)
     .cache(cache)
     .build()?;
+```
+
+### Using Getters and Setters
+
+You can add getter and setter methods to your fields using attributes:
+
+```rust
+#[builder]
+struct Config {
+    #[builder(getter)]  // Generates get_api_key()
+    api_key: String,
+    
+    #[builder(setter)]  // Generates set_timeout()
+    timeout: Duration,
+    
+    #[builder(getter, setter)]  // Generates both
+    max_retries: u32,
+}
+
+let mut config = Config::builder()
+    .api_key("secret".to_string())
+    .timeout(Duration::from_secs(30))
+    .max_retries(3)
+    .build()?;
+
+// Use generated getter
+assert_eq!(config.get_api_key(), &"secret".to_string());
+
+// Use generated setter
+config.set_max_retries(5);
+```
+
+### Composing Services
+
+```rust
+#[builder]
+struct AppServices {
+    #[builder(getter)]  // Access services via getters
+    user_service: Arc<UserService>,
+    post_service: Arc<PostService>,
+}
 
 let app_services = AppServices::builder()
     .user_service(Arc::new(user_service))
     .post_service(Arc::new(post_service))
     .build()?;
+
+// Access services using generated getters
+let user_service = app_services.get_user_service();
 ```
 
 ## Builder Pattern vs Traditional DI
 
-### Memory Safety and Ownership
-```rust
-// ❌ DI Container - Potential runtime panics
-let service = container.resolve::<Service>().unwrap();
+### Advantages of Builder Pattern
 
-// ✅ Builder Pattern - Ownership is clear and enforced
-let service = Service::builder()
-    .dependency(dep)
-    .build()?;
-```
+1. **Type Safety**: All dependencies are checked at compile time
+2. **Zero Runtime Cost**: No reflection or dynamic dispatch overhead
+3. **Ownership Control**: Works naturally with Rust's ownership system
+4. **Explicit Dependencies**: Dependencies are clearly visible in the code
+5. **Flexible Access**: Optional getter/setter generation for fine-grained control
 
-### Type Safety
-```rust
-// ❌ DI Container - Runtime type checks
-container.register::<dyn Repository>(Box::new(MyRepo));
+### Disadvantages of Traditional DI
 
-// ✅ Builder Pattern - Compile-time type checks
-#[builder]
-struct Service {
-    repo: Arc<dyn Repository>
-}
-```
-
-### Testing
-```rust
-// ✅ Easy mock injection with builder
-#[test]
-fn test_service() {
-    let mock_repo = Arc::new(MockRepository::new());
-    let service = Service::builder()
-        .repository(mock_repo)
-        .build()
-        .unwrap();
-    
-    // Test your service
-}
-```
-
-## Advanced Features
-
-### Error Handling
-```rust
-#[derive(Debug, Error)]
-pub enum BuildError {
-    #[error("Missing dependency: {0}")]
-    MissingDependency(String),
-    // ... other error types
-}
-
-// Usage
-let result = Service::builder()
-    .dependency(dep)
-    .build()
-    .map_err(|e| format!("Failed to build service: {}", e))?;
-```
-
-### Async Initialization
-```rust
-#[builder(async_init)]
-struct Service {
-    repo: Arc<dyn Repository>,
-}
-
-impl Service {
-    async fn init(&self) -> Result<(), Error> {
-        self.repo.connect().await?;
-        Ok(())
-    }
-}
-```
-
-## Best Practices
-
-1. **Use Arc for Shared Services**
-```rust
-#[builder]
-struct AppState {
-    services: Arc<AppServices>,
-}
-```
-
-2. **Group Related Services**
-```rust
-#[builder]
-struct DatabaseServices {
-    user_repo: Arc<dyn UserRepository>,
-    post_repo: Arc<dyn PostRepository>,
-}
-```
-
-3. **Clear Error Handling**
-```rust
-let service = Service::builder()
-    .dependency(dep)
-    .build()
-    .expect("Failed to build service: missing dependency");
-```
-
-## Performance Considerations
-
-The builder pattern in Rust has several performance advantages:
-
-1. Zero runtime overhead for dependency resolution
-2. No reflection or dynamic dispatch (unless explicitly used with trait objects)
-3. Smaller binary size compared to DI frameworks
-4. Better optimization opportunities for the compiler
-
-## Why Not Traditional DI?
-
-1. **Runtime Overhead**: Traditional DI containers need to resolve dependencies at runtime
-2. **Type Erasure**: Many DI solutions rely heavily on type erasure and runtime checks
+1. **Runtime Overhead**: Container resolution and type checking at runtime
+2. **Safety Issues**: Potential runtime panics from missing dependencies
 3. **Ownership Complexity**: DI frameworks often struggle with Rust's ownership rules
 4. **Hidden Dependencies**: Dependencies are often hidden in container configuration
 5. **Runtime Failures**: Many dependency issues only surface at runtime
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We welcome contributions! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
---------------------
-All commit messages generated by [opencommit](https://github.com/di-sukharev/opencommit)
