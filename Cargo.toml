@@ -10,7 +10,7 @@ keywords = ["dependency-injection", "builder-pattern", "ioc", "di", "type-safe"]
 categories = ["development-tools::build-utils", "rust-patterns", "development-tools"]
 
 [dependencies]
-service-builder-macro = { path = "service-builder-macro", version = "0.2.0" }
+service-builder-macro = { path = "service-builder-macro", version = "0.2.1" }
 syn = { version = "2.0", features = ["full"] }
 quote = "1.0"
 proc-macro2 = "1.0"
