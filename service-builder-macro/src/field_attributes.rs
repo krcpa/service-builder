@@ -63,15 +63,11 @@ impl FieldAttributes {
             required: true, // Default to true for backward compatibility
             ..Default::default()
         };
-        let field_name = field.ident.as_ref().unwrap();
-
-        eprintln!("Processing field: {}", field_name);
+        let field_name = field.ident.as_ref().unwrap().to_string();
 
         // Process field-level attributes first
         for attr in field_attrs {
             if attr.path().is_ident("builder") {
-                eprintln!("Found builder attribute on field: {}", attr.to_token_stream());
-
                 let _ = attr.parse_nested_meta(|meta| {
                     if meta.path.is_ident("getter") {
                         attrs.getter = true;
@@ -93,13 +89,11 @@ impl FieldAttributes {
                 continue;
             }
 
-            eprintln!("Found builder attribute: {}", attr.to_token_stream());
-
             if let Ok(meta) = attr.parse_args_with(|input: syn::parse::ParseStream| {
                 input.parse_terminated(FieldConfig::parse, Token![,])
             }) {
                 for config in meta {
-                    if config.name == field_name.to_string() {
+                    if config.name == field_name {
                         attrs.getter |= config.getter;
                         attrs.setter |= config.setter;
                     }
@@ -107,8 +101,6 @@ impl FieldAttributes {
             }
         }
 
-        eprintln!("Final attributes for field {}: getter={}, setter={}, builder={}, required={}", 
-            field_name, attrs.getter, attrs.setter, attrs.builder, attrs.required);
         attrs
     }
 }
