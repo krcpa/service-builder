@@ -16,10 +16,13 @@ mod field_attributes;
 /// - `#[builder(getter)]`: Generates a getter method for the field
 /// - `#[builder(setter)]`: Generates a setter method for the field
 /// - `#[builder(getter, setter)]`: Generates both getter and setter methods
+/// - `#[builder(default)]`: Field uses `Default::default()` if not provided
+/// - `#[builder(default = "expression")]`: Field uses custom default expression
+/// - `#[builder(optional)]`: For `Option<T>` fields, defaults to `None`
 ///
 /// # Example
 ///
-/// ```rust
+/// ```rust,ignore
 /// use service_builder::builder;
 ///
 /// #[builder]

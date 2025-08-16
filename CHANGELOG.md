@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-01-16
+
+### Added
+- Added default value support with `#[builder(default)]` attribute
+- Added custom default expressions with `#[builder(default = "expression")]`
+- Added `#[builder(optional)]` attribute for Option<T> fields
+- Added `build_with_defaults()` method for permissive building
+- Added comprehensive tests for default value functionality
+- Added example demonstrating configuration pattern usage
+
+### Changed
+- Enhanced field attribute parsing to support default values
+- Improved builder generation to handle defaults and optional fields
+- Updated documentation with new attribute references
+
 ## [0.2.2] - 2025-01-12
 
 ### Changed

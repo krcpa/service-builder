@@ -1,6 +1,6 @@
 [package]
 name = "service-builder"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2021"
 authors = ["anil <anil.krcp@gmail.com>"]
 description = "A lightweight, type-safe service construction library for Rust that provides compile-time dependency injection through builder pattern"
@@ -10,7 +10,7 @@ keywords = ["dependency-injection", "builder-pattern", "ioc", "di", "type-safe"]
 categories = ["development-tools::build-utils", "rust-patterns", "development-tools"]
 
 [dependencies]
-service-builder-macro = { path = "service-builder-macro", version = "0.2.2" }
+service-builder-macro = { path = "service-builder-macro", version = "0.3.0" }
 syn = { version = "2.0", features = ["full"] }
 quote = "1.0"
 proc-macro2 = "1.0"

@@ -14,6 +14,8 @@ A lightweight, type-safe service construction library for Rust that leverages th
 - 📦 **Field-level getters and setters** with attribute control
 - ⚡ **Zero-cost abstractions** - no runtime reflection or dynamic dispatch
 - 🔍 **Comprehensive error handling** with descriptive messages
+- 🎯 **Default values support** - Optional fields with custom or default values
+- 🔧 **Flexible build strategies** - Strict or permissive build methods
 
 ## Why Builder Pattern in Rust?
 
@@ -69,7 +71,7 @@ let post_service = PostService::builder()
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-service-builder = "0.2.0"
+service-builder = "0.3.0"
 ```
 
 ### Basic Usage with Builder Pattern
@@ -120,6 +122,49 @@ assert_eq!(config.get_api_key(), &"secret".to_string());
 config.set_max_retries(5);
 ```
 
+### Default Values and Optional Fields
+
+service-builder now supports configuration patterns with default values:
+
+```rust
+use std::time::Duration;
+
+#[builder]
+struct DatabaseConfig {
+    // Required field - no default
+    connection_string: String,
+    
+    // Optional with custom default
+    #[builder(default = "Duration::from_secs(30)")]
+    timeout: Duration,
+    
+    // Optional with Default trait
+    #[builder(default)]
+    ssl_enabled: bool,
+    
+    // Optional field - defaults to None
+    #[builder(optional)]
+    max_connections: Option<usize>,
+}
+
+// Use build_with_defaults() for configs
+let config = DatabaseConfig::builder()
+    .connection_string("postgres://localhost/mydb".to_string())
+    .build_with_defaults()?;  // Uses defaults for missing fields
+
+// Or override specific defaults
+let config = DatabaseConfig::builder()
+    .connection_string("postgres://localhost/mydb".to_string())
+    .timeout(Duration::from_secs(60))
+    .ssl_enabled(true)
+    .build_with_defaults()?;
+
+// Strict build() still requires all non-default fields
+let config = DatabaseConfig::builder()
+    .connection_string("postgres://localhost/mydb".to_string())
+    .build()?;  // Works because other fields have defaults
+```
+
 ### Composing Services
 
 ```rust
@@ -138,6 +183,22 @@ let app_services = AppServices::builder()
 // Access services using generated getters
 let user_service = app_services.get_user_service();
 ```
+
+## Attribute Reference
+
+### Field Attributes
+
+- `#[builder(getter)]` - Generates a getter method `get_field_name() -> &FieldType`
+- `#[builder(setter)]` - Generates a setter method `set_field_name(value: FieldType)`
+- `#[builder(getter, setter)]` - Generates both getter and setter methods
+- `#[builder(default)]` - Field uses `Default::default()` if not provided
+- `#[builder(default = "expression")]` - Field uses custom default expression
+- `#[builder(optional)]` - For `Option<T>` fields, defaults to `None`
+
+### Build Methods
+
+- `build()` - Strict build, returns error if required fields are missing
+- `build_with_defaults()` - Permissive build, uses defaults where available
 
 ## Builder Pattern vs Traditional DI
 

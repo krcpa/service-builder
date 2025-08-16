@@ -1,10 +1,10 @@
 use proc_macro2::{TokenStream, Span};
-use quote::{quote, ToTokens};
+use quote::quote;
 use syn::{
-    Data, DeriveInput, Fields, Ident, Generics, WhereClause,
+    Data, DeriveInput, Fields, Ident,
 };
 
-use crate::field_attributes::FieldAttributes;
+use crate::field_attributes::{FieldAttributes, DefaultValue};
 
 pub fn expand_builder(input: DeriveInput) -> syn::Result<TokenStream> {
     let struct_name = &input.ident;
@@ -26,6 +26,7 @@ pub fn expand_builder(input: DeriveInput) -> syn::Result<TokenStream> {
     let mut builder_new_fields = Vec::new();
     let mut builder_methods = Vec::new();
     let mut build_fields = Vec::new();
+    let mut build_with_defaults_fields = Vec::new();
     let mut getters = Vec::new();
     let mut setters = Vec::new();
 
@@ -54,17 +55,67 @@ pub fn expand_builder(input: DeriveInput) -> syn::Result<TokenStream> {
                 }
             });
 
+            // For strict build() method
             if attrs.required {
                 build_fields.push(quote! {
                     #field_name: self.#field_name.ok_or_else(|| service_builder::error::BuildError::MissingDependency(stringify!(#field_name).to_string()))?
                 });
-            } else {
+            } else if let Some(default_value) = &attrs.default {
+                match default_value {
+                    DefaultValue::Default => {
+                        build_fields.push(quote! {
+                            #field_name: self.#field_name.unwrap_or_default()
+                        });
+                    }
+                    DefaultValue::Expression(expr) => {
+                        let expr_tokens: TokenStream = expr.parse().unwrap_or_else(|_| quote! { compile_error!("Invalid default expression") });
+                        build_fields.push(quote! {
+                            #field_name: self.#field_name.unwrap_or_else(|| #expr_tokens)
+                        });
+                    }
+                }
+            } else if attrs.optional {
+                // For optional fields without explicit default, use None for Option<T> types
                 build_fields.push(quote! {
-                    #field_name: self.#field_name.unwrap_or_default()
+                    #field_name: self.#field_name.unwrap_or(None)
+                });
+            } else {
+                // No default specified and not marked as optional - this field is still required
+                build_fields.push(quote! {
+                    #field_name: self.#field_name.ok_or_else(|| service_builder::error::BuildError::MissingDependency(stringify!(#field_name).to_string()))?
+                });
+            }
+            
+            // For build_with_defaults() method - always provide a value
+            if let Some(default_value) = &attrs.default {
+                match default_value {
+                    DefaultValue::Default => {
+                        build_with_defaults_fields.push(quote! {
+                            #field_name: self.#field_name.unwrap_or_default()
+                        });
+                    }
+                    DefaultValue::Expression(expr) => {
+                        let expr_tokens: TokenStream = expr.parse().unwrap_or_else(|_| quote! { compile_error!("Invalid default expression") });
+                        build_with_defaults_fields.push(quote! {
+                            #field_name: self.#field_name.unwrap_or_else(|| #expr_tokens)
+                        });
+                    }
+                }
+            } else if attrs.optional {
+                build_with_defaults_fields.push(quote! {
+                    #field_name: self.#field_name.unwrap_or(None)
+                });
+            } else {
+                // For fields without explicit default, they are still required even in build_with_defaults
+                build_with_defaults_fields.push(quote! {
+                    #field_name: self.#field_name.ok_or_else(|| service_builder::error::BuildError::MissingDependency(stringify!(#field_name).to_string()))?
                 });
             }
         } else {
             build_fields.push(quote! {
+                #field_name: Default::default()
+            });
+            build_with_defaults_fields.push(quote! {
                 #field_name: Default::default()
             });
         }
@@ -109,6 +160,12 @@ pub fn expand_builder(input: DeriveInput) -> syn::Result<TokenStream> {
             pub fn build(self) -> Result<#struct_name #ty_generics, service_builder::error::BuildError> {
                 Ok(#struct_name {
                     #(#build_fields),*
+                })
+            }
+            
+            pub fn build_with_defaults(self) -> Result<#struct_name #ty_generics, service_builder::error::BuildError> {
+                Ok(#struct_name {
+                    #(#build_with_defaults_fields),*
                 })
             }
         }

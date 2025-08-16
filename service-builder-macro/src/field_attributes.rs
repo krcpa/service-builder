@@ -1,5 +1,4 @@
 use syn::{Attribute, Field, parse::Parse, Token, punctuated::Punctuated, parse::ParseStream};
-use quote::ToTokens;
 
 #[derive(Debug, Default)]
 pub struct FieldAttributes {
@@ -7,6 +6,14 @@ pub struct FieldAttributes {
     pub setter: bool,
     pub builder: bool,
     pub required: bool,
+    pub optional: bool,
+    pub default: Option<DefaultValue>,
+}
+
+#[derive(Debug, Clone)]
+pub enum DefaultValue {
+    Default,
+    Expression(String),
 }
 
 #[derive(Debug)]
@@ -76,7 +83,20 @@ impl FieldAttributes {
                     } else if meta.path.is_ident("skip") {
                         attrs.builder = false;
                     } else if meta.path.is_ident("optional") {
+                        attrs.optional = true;
                         attrs.required = false;
+                    } else if meta.path.is_ident("default") {
+                        attrs.required = false;
+                        if meta.input.peek(Token![=]) {
+                            // Parse #[builder(default = "expression")]
+                            let _ = meta.input.parse::<Token![=]>();
+                            if let Ok(expr) = meta.input.parse::<syn::LitStr>() {
+                                attrs.default = Some(DefaultValue::Expression(expr.value()));
+                            }
+                        } else {
+                            // Parse #[builder(default)]
+                            attrs.default = Some(DefaultValue::Default);
+                        }
                     }
                     Ok(())
                 });
