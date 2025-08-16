@@ -1,2 +1,9 @@
-**/target
-.idea
+target/
+.DS_Store
+.claude/
+Cargo.lock
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
